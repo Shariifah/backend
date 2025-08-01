@@ -7,7 +7,7 @@ import { sendSuccess, sendError } from "../utils/responseHandler";
 
 class AuthController {
 
-  // 🔹 ÉTAPE 1 : Demande d'OTP pour inscription
+  // INSCRIPTION ÉTAPE 1 : Demande d'OTP pour inscription
   async requestOtp(req: Request, res: Response) {
     try {
       const { phonenumber } = req.body;
@@ -21,7 +21,7 @@ class AuthController {
 
       sendSuccess(res, {
         phonenumber,
-        expiresIn: expiresAt,
+        expiresIn: expiresAt ?? "10 minutes",
         attemptsRemaining: 4
       }, "Code de vérification envoyé avec succès", 200);
 
@@ -30,7 +30,7 @@ class AuthController {
     }
   }
 
-  // 🔹 ÉTAPE 2 : Vérification de l'OTP
+  // INSCRIPTION ÉTAPE 2 : Vérification de l'OTP
   async verifyOtp(req: Request, res: Response) {
     try {
       const { phonenumber, otp } = req.body;
@@ -49,7 +49,7 @@ class AuthController {
     }
   }
 
-  // 🔹 ÉTAPE 3 : Inscription finale avec token OTP
+  // INSCRIPTION ÉTAPE 3 : Inscription finale avec token OTP
   async register(req: Request, res: Response) {
     try {
       const { otpToken, firstname, lastname, phonenumber, password, verifyPassword } = req.body;
@@ -94,7 +94,7 @@ class AuthController {
     }
   }
 
-  // 🔹 Renvoi d'OTP (optionnel)
+  // Renvoi d'OTP (optionnel)
   async resendOtp(req: Request, res: Response) {
     try {
       const { phonenumber } = req.body;
@@ -116,7 +116,7 @@ class AuthController {
     }
   }
 
-  // 🔹 Authentification d'un utilisateur (inchangé)
+  // Authentification d'un utilisateur
   async login(req: Request, res: Response) {
     try {
       const { phonenumber, password } = req.body;

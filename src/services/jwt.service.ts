@@ -1,6 +1,6 @@
 // src/services/jwt.service.ts
 import jwt from "jsonwebtoken";
-import { UserDocument, JwtPayload } from "../types";
+import { UserDocument, JwtPayload } from "../types/interfaces";
 import config from "../configs/config";
 
 class JwtService {

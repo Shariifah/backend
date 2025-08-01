@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-import { OtpDocument, OtpType } from '../types';
+import { OtpDocument } from '../types/interfaces';
+import { OtpType } from '../types/types';
 
 const OtpSchema = new mongoose.Schema<OtpDocument>({
     phonenumber: {
@@ -20,7 +21,7 @@ const OtpSchema = new mongoose.Schema<OtpDocument>({
     },
     expiresAt: {
         type: Date,
-        required: true,
+        required: false,
         index: true
     },
     attempts: {

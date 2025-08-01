@@ -1,22 +1,4 @@
-// src/utils/validationHelper.ts
-
-export interface ValidationRule {
-  required?: boolean;
-  minLength?: number;
-  maxLength?: number;
-  pattern?: RegExp;
-  type?: 'string' | 'number' | 'email' | 'phone' | 'password';
-  custom?: (value: any) => boolean | string;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-}
-
-export interface FieldValidation {
-  [key: string]: ValidationRule;
-}
+import {FieldValidation, ValidationResult, ValidationRule} from "../types/interfaces";
 
 /**
  * Validation des champs selon les règles définies
@@ -183,7 +165,7 @@ export function validateLogin(data: any): ValidationResult {
   return validateFields(data, rules);
 }
 
-/**
+/** 
  * Validation pour l'envoi d'OTP
  */
 export function validateSendOtp(data: any): ValidationResult {
@@ -272,7 +254,7 @@ export function validateVerifyOtp(data: any): ValidationResult {
  */
 export function validateRegisterWithOtp(data: any): ValidationResult {
   const rules: FieldValidation = {
-    otp_token: {
+    otpToken: {
       required: true,
       type: 'string',
       minLength: 32,

@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 import { ALL_PERMISSIONS, getPermissionsForRole } from '../configs/permissions'; 
-import { UserDocument, UserRole, UserStatus } from '../types';
+import { UserDocument } from '../types/interfaces';
+import { UserRole, UserStatus } from '../types/types';
 
 const UserSchema = new mongoose.Schema<UserDocument>({
     firstname: { 

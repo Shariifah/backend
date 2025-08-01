@@ -1,12 +1,11 @@
 import OtpModel from "../models/otp.model";
 import UserModel from "../models/user.model";
-import { OtpDocument, OtpType, RequestOtpData, VerifyOtpData } from "../types";
 import { generateRandomToken } from "../utils/authUtils";
 
 class OtpService {
 
   /**
-   * 🔹 Génère et envoie un OTP pour l'inscription
+   * Génère et envoie un OTP pour l'inscription
    */
   async generateRegistrationOtp(phonenumber: string): Promise<{ otp: string; expiresAt: Date }> {
     // Vérifier si l'utilisateur existe déjà
@@ -33,7 +32,7 @@ class OtpService {
       type: 'registration',
       isUsed: false
     });
-
+ 
     // Générer un OTP à 6 chiffres
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -45,7 +44,7 @@ class OtpService {
       attempts: 0,
       isUsed: false
     });
-
+  
     return {
       otp,
       expiresAt: otpDoc.expiresAt
@@ -53,7 +52,7 @@ class OtpService {
   }
 
   /**
-   * 🔹 Vérifie un OTP et génère un token de validation
+   * Vérifie un OTP et génère un token de validation
    */
   async verifyOtp(phonenumber: string, otp: string): Promise<{ otpToken: string; expiresIn: number }> {
     // Trouver l'OTP valide
@@ -97,7 +96,7 @@ class OtpService {
   }
 
   /**
-   * 🔹 Valide un token OTP pour l'inscription
+   * Valide un token OTP pour l'inscription
    */
   async validateOtpToken(otpToken: string, phonenumber: string): Promise<boolean> {
     const otpDoc = await OtpModel.findOne({
@@ -112,7 +111,7 @@ class OtpService {
   }
 
   /**
-   * 🔹 Nettoie les OTP expirés
+   * Nettoie les OTP expirés
    */
   async cleanupExpiredOtps(): Promise<number> {
     const result = await OtpModel.deleteMany({
@@ -122,7 +121,7 @@ class OtpService {
   }
 
   /**
-   * 🔹 Renvoie un OTP (pour les cas où l'utilisateur n'a pas reçu le SMS)
+   * Renvoie un OTP (pour les cas où l'utilisateur n'a pas reçu le SMS)
    */
   async resendOtp(phonenumber: string): Promise<{ otp: string; expiresAt: Date }> {
     // Vérifier s'il existe un OTP récent non utilisé
@@ -146,7 +145,7 @@ class OtpService {
   }
 
   /**
-   * 🔹 Invalide un token OTP (après inscription réussie)
+   * Invalide un token OTP (après inscription réussie)
    */
   async invalidateOtpToken(otpToken: string): Promise<void> {
     await OtpModel.updateOne(
@@ -156,7 +155,7 @@ class OtpService {
   }
 
   /**
-   * 🔹 Récupère les statistiques OTP pour un numéro
+   * Récupère les statistiques OTP pour un numéro
    */
   async getOtpStats(phonenumber: string): Promise<{
     totalRequests: number;

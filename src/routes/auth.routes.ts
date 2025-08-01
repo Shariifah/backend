@@ -24,7 +24,7 @@ router.post("/register", validateRegisterWithOtpData, authController.register.bi
 // 🔹 RENVOI D'OTP (optionnel)
 router.post("/resend-otp", validateResendOtpData, authController.resendOtp.bind(authController));
 
-// 🔹 AUTHENTIFICATION (inchangé)
+// 🔹 AUTHENTIFICATION
 router.post("/login", validateLoginData, authController.login.bind(authController));
 
 
