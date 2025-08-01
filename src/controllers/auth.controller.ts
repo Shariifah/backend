@@ -7,13 +7,17 @@ import { sendSuccess, sendError } from "../utils/responseHandler";
 
 class AuthController {
 
+  // Types d'OTP
+  private readonly OTP_TYPE_REGISTRATION = 'registration';
+  private readonly OTP_TYPE_PASSWORD_RESET = 'password_reset';
+
   // INSCRIPTION ÉTAPE 1 : Demande d'OTP pour inscription
   async requestOtp(req: Request, res: Response) {
     try {
       const { phonenumber } = req.body;
 
       // Générer l'OTP
-      const { otp, expiresAt } = await OtpService.generateRegistrationOtp(phonenumber);
+      const { otp, expiresAt } = await OtpService.generateOtp(phonenumber, this.OTP_TYPE_REGISTRATION);
 
       // Envoyer le SMS
       const message = `Votre code de vérification est : ${otp}`;
@@ -36,7 +40,7 @@ class AuthController {
       const { phonenumber, otp } = req.body;
 
       // Vérifier l'OTP et obtenir le token de validation
-      const { otpToken, expiresIn } = await OtpService.verifyOtp(phonenumber, otp);
+      const { otpToken, expiresIn } = await OtpService.verifyOtp(phonenumber, otp, this.OTP_TYPE_REGISTRATION);
 
       sendSuccess(res, {
         otpToken,
@@ -60,7 +64,7 @@ class AuthController {
       }
 
       // Valider le token OTP
-      const isTokenValid = await OtpService.validateOtpToken(otpToken, phonenumber);
+      const isTokenValid = await OtpService.validateOtpToken(otpToken, phonenumber, this.OTP_TYPE_REGISTRATION);
       if (!isTokenValid) {
         throw new Error("Token de validation invalide ou expiré");
       }
@@ -100,7 +104,7 @@ class AuthController {
       const { phonenumber } = req.body;
 
       // Renvoyer l'OTP
-      const { otp, expiresAt } = await OtpService.resendOtp(phonenumber);
+      const { otp, expiresAt } = await OtpService.resendOtp(phonenumber, this.OTP_TYPE_REGISTRATION);
 
       // Envoyer le SMS
       const message = `Votre nouveau code de vérification est : ${otp}`;
@@ -131,6 +135,137 @@ class AuthController {
         expiresIn: tokens.expiresIn,
         tokenType: tokens.tokenType
       }, "Authentification réussie ✅", 200);
+
+    } catch (error) {
+      sendError(res, error);
+    }
+  }
+
+  // CHANGEMENT DE MOT DE PASSE (utilisateur connecté)
+  async changePassword(req: Request, res: Response) {
+    try {
+      const { currentPassword, newPassword, confirmPassword } = req.body;
+      const userId = (req as any).user.id; // Récupéré du middleware d'authentification
+
+      // Vérifier que les nouveaux mots de passe correspondent
+      if (newPassword !== confirmPassword) {
+        throw new Error("Les nouveaux mots de passe ne correspondent pas");
+      }
+
+      // Vérifier que le nouveau mot de passe est différent de l'ancien
+      if (currentPassword === newPassword) {
+        throw new Error("Le nouveau mot de passe doit être différent de l'ancien");
+      }
+
+      // Changer le mot de passe
+      await UserService.resetPassword(userId, newPassword);
+
+      sendSuccess(res, {}, "Mot de passe modifié avec succès", 200);
+
+    } catch (error) {
+      sendError(res, error);
+    }
+  }
+
+  // MOT DE PASSE OUBLIÉ ÉTAPE 1 : Demande d'OTP pour réinitialisation
+  async requestPasswordResetOtp(req: Request, res: Response) {
+    try {
+      const { phonenumber } = req.body;
+ 
+      // Vérifier que l'utilisateur existe
+      const user = await UserService.findByPhonenumber(phonenumber);
+      if (!user) {
+        throw new Error("Aucun compte associé à ce numéro de téléphone");
+      }
+
+      // Générer l'OTP pour réinitialisation
+      const { otp, expiresAt } = await OtpService.generateOtp(phonenumber, this.OTP_TYPE_PASSWORD_RESET);
+
+      // Envoyer le SMS
+      const message = `Votre code de réinitialisation de mot de passe est : ${otp}`;
+      await SmsService.sendSMS(phonenumber, message);
+
+      sendSuccess(res, {
+        phonenumber,
+        expiresIn: expiresAt ?? "10 minutes",
+        attemptsRemaining: 4
+      }, "Code de réinitialisation envoyé avec succès", 200);
+
+    } catch (error) {
+      sendError(res, error);
+    }
+  }
+
+  // MOT DE PASSE OUBLIÉ ÉTAPE 2 : Vérification de l'OTP
+  async verifyPasswordResetOtp(req: Request, res: Response) {
+    try {
+      const { phonenumber, otp } = req.body;
+
+      // Vérifier l'OTP et obtenir le token de validation
+      const { otpToken, expiresIn } = await OtpService.verifyOtp(phonenumber, otp, this.OTP_TYPE_PASSWORD_RESET);
+
+      sendSuccess(res, {
+        otpToken,
+        phonenumber,
+        expiresIn
+      }, "Code vérifié, veuillez définir votre nouveau mot de passe", 200);
+
+    } catch (error) {
+      sendError(res, error);
+    }
+  }
+
+  // MOT DE PASSE OUBLIÉ ÉTAPE 3 : Réinitialisation du mot de passe
+  async resetPassword(req: Request, res: Response) {
+    try {
+      const { otpToken, phonenumber, newPassword, confirmPassword } = req.body;
+
+      // Vérifier que les mots de passe correspondent
+      if (newPassword !== confirmPassword) {
+        throw new Error("Les mots de passe ne correspondent pas");
+      }
+
+      // Valider le token OTP
+      const isTokenValid = await OtpService.validateOtpToken(otpToken, phonenumber, this.OTP_TYPE_PASSWORD_RESET);
+      if (!isTokenValid) {
+        throw new Error("Token de validation invalide ou expiré");
+      }
+
+      // Réinitialiser le mot de passe
+      await UserService.resetPassword(phonenumber, newPassword);
+
+      // Invalider le token OTP
+      await OtpService.invalidateOtpToken(otpToken);
+
+      sendSuccess(res, {}, "Mot de passe réinitialisé avec succès", 200);
+
+    } catch (error) {
+      sendError(res, error);
+    }
+  }
+
+  // Renvoi d'OTP pour réinitialisation de mot de passe
+  async resendPasswordResetOtp(req: Request, res: Response) {
+    try {
+      const { phonenumber } = req.body;
+
+      // Vérifier que l'utilisateur existe
+      const user = await UserService.findByPhonenumber(phonenumber);
+      if (!user) {
+        throw new Error("Aucun compte associé à ce numéro de téléphone");
+      }
+
+      // Renvoyer l'OTP
+      const { otp, expiresAt } = await OtpService.resendOtp(phonenumber, this.OTP_TYPE_PASSWORD_RESET);
+
+      // Envoyer le SMS
+      const message = `Votre nouveau code de réinitialisation est : ${otp}`;
+      await SmsService.sendSMS(phonenumber, message);
+
+      sendSuccess(res, {
+        phonenumber,
+        expiresIn: expiresAt
+      }, "Nouveau code de réinitialisation envoyé", 200);
 
     } catch (error) {
       sendError(res, error);

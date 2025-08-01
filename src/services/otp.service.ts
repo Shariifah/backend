@@ -1,24 +1,35 @@
 import OtpModel from "../models/otp.model";
 import UserModel from "../models/user.model";
 import { generateRandomToken } from "../utils/authUtils";
+import { OtpType } from "../types/types";
 
 class OtpService {
 
   /**
    * Génère et envoie un OTP pour l'inscription
    */
-  async generateRegistrationOtp(phonenumber: string): Promise<{ otp: string; expiresAt: Date }> {
+  async generateOtp(phonenumber: string, type: OtpType): Promise<{ otp: string; expiresAt: Date }> {
     // Vérifier si l'utilisateur existe déjà
     const existingUser = await UserModel.findOne({ phonenumber });
-    if (existingUser) {
-      throw new Error("Un utilisateur avec ce numéro de téléphone existe déjà");
+  
+    switch(type) {
+      case 'registration':
+        if (existingUser) {
+          throw new Error("Un utilisateur avec ce numéro de téléphone existe déjà");
+        }
+        break;
+      case 'password_reset':
+        if (!existingUser) {
+          throw new Error("Aucun compte associé à ce numéro de téléphone");
+        }
+        break;
     }
 
     // Vérifier les limites d'OTP (max 3 par heure)
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     const recentOtps = await OtpModel.countDocuments({
       phonenumber,
-      type: 'registration',
+      type,
       createdAt: { $gte: oneHourAgo }
     });
 
@@ -29,7 +40,7 @@ class OtpService {
     // Supprimer les anciens OTP non utilisés pour ce numéro
     await OtpModel.deleteMany({
       phonenumber,
-      type: 'registration',
+      type,
       isUsed: false
     });
  
@@ -40,7 +51,7 @@ class OtpService {
     const otpDoc = await OtpModel.create({
       phonenumber,
       otp,
-      type: 'registration',
+      type,
       attempts: 0,
       isUsed: false
     });
@@ -54,11 +65,11 @@ class OtpService {
   /**
    * Vérifie un OTP et génère un token de validation
    */
-  async verifyOtp(phonenumber: string, otp: string): Promise<{ otpToken: string; expiresIn: number }> {
+  async verifyOtp(phonenumber: string, otp: string, type: OtpType): Promise<{ otpToken: string; expiresIn: number }> {
     // Trouver l'OTP valide
     const otpDoc = await OtpModel.findOne({
       phonenumber,
-      type: 'registration',
+      type,
       isUsed: false,
       expiresAt: { $gt: new Date() }
     }).sort({ createdAt: -1 });
@@ -98,11 +109,11 @@ class OtpService {
   /**
    * Valide un token OTP pour l'inscription
    */
-  async validateOtpToken(otpToken: string, phonenumber: string): Promise<boolean> {
+  async validateOtpToken(otpToken: string, phonenumber: string, type: OtpType): Promise<boolean> {
     const otpDoc = await OtpModel.findOne({
       otpToken,
       phonenumber,
-      type: 'registration',
+      type,
       isUsed: true,
       expiresAt: { $gt: new Date() }
     });
@@ -111,23 +122,13 @@ class OtpService {
   }
 
   /**
-   * Nettoie les OTP expirés
-   */
-  async cleanupExpiredOtps(): Promise<number> {
-    const result = await OtpModel.deleteMany({
-      expiresAt: { $lt: new Date() }
-    });
-    return result.deletedCount || 0;
-  }
-
-  /**
    * Renvoie un OTP (pour les cas où l'utilisateur n'a pas reçu le SMS)
    */
-  async resendOtp(phonenumber: string): Promise<{ otp: string; expiresAt: Date }> {
+  async resendOtp(phonenumber: string, type: OtpType): Promise<{ otp: string; expiresAt: Date }> {
     // Vérifier s'il existe un OTP récent non utilisé
     const recentOtp = await OtpModel.findOne({
       phonenumber,
-      type: 'registration',
+      type,
       isUsed: false,
       expiresAt: { $gt: new Date() }
     });
@@ -141,9 +142,19 @@ class OtpService {
     }
 
     // Sinon, générer un nouveau OTP
-    return this.generateRegistrationOtp(phonenumber);
+    return this.generateOtp(phonenumber, type);
   }
 
+  /**
+   * Nettoie les OTP expirés
+   */
+  async cleanupExpiredOtps(): Promise<number> {
+    const result = await OtpModel.deleteMany({
+      expiresAt: { $lt: new Date() }
+    });
+    return result.deletedCount || 0;
+  }
+  
   /**
    * Invalide un token OTP (après inscription réussie)
    */

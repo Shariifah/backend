@@ -46,6 +46,13 @@ class UserService {
     return user;
   };
 
+  // Réinitialiser le mot de passe d'un utilisateur
+  async resetPassword(userId: string, newPassword: string) : Promise<any> {
+    // Hacher le nouveau mot de passe
+    const hashedPassword = await hashPassword(newPassword);
+    // Mettre à jour le mot de passe de l'utilisateur
+    await UserModel.findByIdAndUpdate(userId, { password: hashedPassword });
+  }
 
 }
 
