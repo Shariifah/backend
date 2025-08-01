@@ -11,6 +11,7 @@
 │   ├── /models           # Modèles MongoDB
 │   ├── /routes           # Routes de l'API
 │   ├── /services         # Logique métier
+│   ├── /types            # Centralisation des interfaces et types de données
 │   ├── /utils            # Fonctions utilitaires
 │   ├── app.ts            # Initialisation de l'app
 │   └── server.ts         # Lancement du serveur
