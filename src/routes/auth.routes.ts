@@ -1,16 +1,30 @@
 import express from "express";
 import authController from "../controllers/auth.controller";
 import { 
-  validateRegistrationData, 
+  validateRequestOtpData, 
+  validateVerifyOtpData, 
+  validateRegisterWithOtpData, 
   validateLoginData, 
-  validateSendOtpData, 
+  validateResendOtpData
 } from "../middlewares/validationMiddleware";
 
 const router = express.Router();
 
+// FLOW D'INSCRIPTION AVEC OTP
 
-router.post("/otp", validateSendOtpData, authController.sendOtp.bind(authController));
-router.post("/register", validateRegistrationData, authController.register.bind(authController));
+// Étape 1 : Demande d'OTP pour inscription
+router.post("/request-otp", validateRequestOtpData, authController.requestOtp.bind(authController));
+
+// Étape 2 : Vérification de l'OTP
+router.post("/verify-otp", validateVerifyOtpData, authController.verifyOtp.bind(authController));
+
+// Étape 3 : Inscription finale avec token OTP
+router.post("/register", validateRegisterWithOtpData, authController.register.bind(authController));
+
+// 🔹 RENVOI D'OTP (optionnel)
+router.post("/resend-otp", validateResendOtpData, authController.resendOtp.bind(authController));
+
+// 🔹 AUTHENTIFICATION (inchangé)
 router.post("/login", validateLoginData, authController.login.bind(authController));
 
 

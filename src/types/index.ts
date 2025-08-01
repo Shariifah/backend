@@ -134,4 +134,50 @@ export interface PaginatedResult<T> {
         hasNext: boolean;
         hasPrev: boolean;
     };
+}
+
+// 🔹 Types pour les OTP
+export type OtpType = 'registration' | 'password_reset';
+
+// 🔹 Interface pour le document OTP
+export interface OtpDocument extends mongoose.Document {
+    phonenumber: string;
+    otp: string;
+    type: OtpType;
+    expiresAt: Date;
+    attempts: number;
+    isUsed: boolean;
+    otpToken?: string;
+    createdAt: Date;
+    isValid(): boolean;
+    incrementAttempts(): void;
+    markAsUsed(): void;
+}
+
+// 🔹 Interface pour les données de demande d'OTP
+export interface RequestOtpData {
+    phonenumber: string;
+}
+
+// 🔹 Interface pour les données de vérification d'OTP
+export interface VerifyOtpData {
+    phonenumber: string;
+    otp: string;
+}
+
+// 🔹 Interface pour les données d'inscription avec token OTP
+export interface RegisterWithOtpData {
+    otp_token: string;
+    firstname: string;
+    lastname: string;
+    phonenumber: string;
+    password: string;
+    verifyPassword: string;
+}
+
+// 🔹 Interface pour la réponse de vérification d'OTP
+export interface OtpVerificationResponse {
+    otp_token: string;
+    phonenumber: string;
+    expiresIn: number; // en minutes
 } 

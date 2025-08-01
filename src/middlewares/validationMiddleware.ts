@@ -5,12 +5,66 @@ import {
   validateLogin, 
   validateSendOtp, 
   validateVerifyOtp,
+  validateRequestOtp,
+  validateRegisterWithOtp,
   ValidationResult 
 } from "../utils/validationHelper";
 import { sendError } from "../utils/responseHandler";
 
 /**
- * Middleware de validation pour l'inscription
+ * Middleware de validation pour la demande d'OTP (Étape 1)
+ */
+export const validateRequestOtpData = (req: Request, res: Response, next: NextFunction) => {
+  const validation: ValidationResult = validateRequestOtp(req.body);
+  
+  if (!validation.isValid) {
+    return sendError(res, new Error(validation.errors.join(", ")), 400);
+  }
+  
+  next();
+};
+
+/**
+ * Middleware de validation pour la vérification d'OTP (Étape 2)
+ */
+export const validateVerifyOtpData = (req: Request, res: Response, next: NextFunction) => {
+  const validation: ValidationResult = validateVerifyOtp(req.body);
+  
+  if (!validation.isValid) {
+    return sendError(res, new Error(validation.errors.join(", ")), 400);
+  }
+  
+  next();
+};
+
+/**
+ * Middleware de validation pour l'inscription avec token OTP (Étape 3)
+ */
+export const validateRegisterWithOtpData = (req: Request, res: Response, next: NextFunction) => {
+  const validation: ValidationResult = validateRegisterWithOtp(req.body);
+  
+  if (!validation.isValid) {
+    return sendError(res, new Error(validation.errors.join(", ")), 400);
+  }
+  
+  next();
+};
+
+/**
+ * Middleware de validation pour le renvoi d'OTP
+ */
+export const validateResendOtpData = (req: Request, res: Response, next: NextFunction) => {
+  const validation: ValidationResult = validateRequestOtp(req.body); // Même validation que request-otp
+  
+  if (!validation.isValid) {
+    return sendError(res, new Error(validation.errors.join(", ")), 400);
+  }
+  
+  next();
+};
+
+/**
+ * Middleware de validation pour l'inscription (ancien - à supprimer)
  */
 export const validateRegistrationData = (req: Request, res: Response, next: NextFunction) => {
   const validation: ValidationResult = validateRegistration(req.body);
@@ -36,7 +90,7 @@ export const validateLoginData = (req: Request, res: Response, next: NextFunctio
 };
 
 /**
- * Middleware de validation pour l'envoi d'OTP
+ * Middleware de validation pour l'envoi d'OTP (ancien - à supprimer)
  */
 export const validateSendOtpData = (req: Request, res: Response, next: NextFunction) => {
   const validation: ValidationResult = validateSendOtp(req.body);
@@ -49,9 +103,9 @@ export const validateSendOtpData = (req: Request, res: Response, next: NextFunct
 };
 
 /**
- * Middleware de validation pour la vérification d'OTP
+ * Middleware de validation pour la vérification d'OTP (ancien - à supprimer)
  */
-export const validateVerifyOtpData = (req: Request, res: Response, next: NextFunction) => {
+export const validateVerifyOtpDataOld = (req: Request, res: Response, next: NextFunction) => {
   const validation: ValidationResult = validateVerifyOtp(req.body);
   
   if (!validation.isValid) {

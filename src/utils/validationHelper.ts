@@ -198,31 +198,6 @@ export function validateSendOtp(data: any): ValidationResult {
 }
 
 /**
- * Validation pour la vérification d'OTP
- */
-export function validateVerifyOtp(data: any): ValidationResult {
-  const rules: FieldValidation = {
-    phonenumber: {
-      required: true,
-      type: 'phone'
-    },
-    otp: {
-      required: true,
-      type: 'string',
-      pattern: /^\d{6}$/,
-      custom: (value) => {
-        if (value.length !== 6) {
-          return "Le code OTP doit contenir exactement 6 chiffres";
-        }
-        return true;
-      }
-    }
-  };
-
-  return validateFields(data, rules);
-}
-
-/**
  * Middleware de validation générique
  */
 export function createValidationMiddleware(validationFunction: (data: any) => ValidationResult) {
@@ -251,4 +226,103 @@ export function validateSingleField(value: any, rule: ValidationRule, fieldName:
   };
   
   return validateFields({ [fieldName]: value }, rules);
+}
+
+/**
+ * Validation pour la demande d'OTP (Étape 1)
+ */
+export function validateRequestOtp(data: any): ValidationResult {
+  const rules: FieldValidation = {
+    phonenumber: {
+      required: true,
+      type: 'phone'
+    }
+  };
+
+  return validateFields(data, rules);
+}
+
+/**
+ * Validation pour la vérification d'OTP (Étape 2)
+ */
+export function validateVerifyOtp(data: any): ValidationResult {
+  const rules: FieldValidation = {
+    phonenumber: {
+      required: true,
+      type: 'phone'
+    },
+    otp: {
+      required: true,
+      type: 'string',
+      pattern: /^\d{6}$/,
+      custom: (value) => {
+        if (value.length !== 6) {
+          return "Le code OTP doit contenir exactement 6 chiffres";
+        }
+        return true;
+      }
+    }
+  };
+
+  return validateFields(data, rules);
+}
+
+/**
+ * Validation pour l'inscription avec token OTP (Étape 3)
+ */
+export function validateRegisterWithOtp(data: any): ValidationResult {
+  const rules: FieldValidation = {
+    otp_token: {
+      required: true,
+      type: 'string',
+      minLength: 32,
+      maxLength: 64
+    },
+    firstname: {
+      required: true,
+      type: 'string',
+      minLength: 2,
+      maxLength: 50
+    },
+    lastname: {
+      required: true,
+      type: 'string',
+      minLength: 2,
+      maxLength: 50
+    },
+    phonenumber: {
+      required: true,
+      type: 'phone'
+    },
+    password: {
+      required: true,
+      type: 'password',
+      minLength: 8,
+      maxLength: 128,
+      custom: (value) => {
+        // Vérifier la complexité du mot de passe
+        const hasUpperCase = /[A-Z]/.test(value);
+        const hasLowerCase = /[a-z]/.test(value);
+        const hasNumbers = /\d/.test(value);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+        
+        if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
+          return "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial";
+        }
+        return true;
+      }
+    },
+    verifyPassword: {
+      required: true,
+      type: 'string',
+      custom: (value) => {
+        if (value !== data.password) {
+          return "Les mots de passe ne correspondent pas";
+        }
+        return true;
+      }
+    }
+  };
+
+  return validateFields(data, rules);
 } 
