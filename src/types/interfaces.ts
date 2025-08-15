@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-import {OtpType, UserRole, UserStatus, TokenType} from "./types";
+import {OtpType, UserRole, UserStatus, TokenType, SubscriptionType, PaymentStatus} from "./types";
+import { Document, Types } from "mongoose";
 
 // Interface pour le document utilisateur
 export interface UserDocument extends mongoose.Document {
@@ -59,4 +60,18 @@ export interface ValidationResult {
 export interface FieldValidation {
     [key: string]: ValidationRule;
 }
+
+//Interface de souscription
+export interface SubscriptionDocument extends Document {
+    userId: Types.ObjectId;
+    type: SubscriptionType;
+    price: number;
+    startDate: Date;
+    endDate: Date;
+    paymentStatus: PaymentStatus;
+    transactionId?: string;
+    created_at: Date;
+    updated_at: Date;
+}
+
   

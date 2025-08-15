@@ -4,7 +4,12 @@ import {
   validateLogin, 
   validateVerifyOtp,
   validateRequestOtp,
-  validateRegisterWithOtp, 
+  validateRegisterWithOtp,
+  validateResetPasswordWithOtp,
+  validateChangePassword,
+  validateCreateSubscription,
+  validateUpdatePaymentStatus,
+  validateCreateTarifSubscription
 } from "../utils/validationHelper";
 import { sendError } from "../utils/responseHandler";
 import { ValidationResult } from "../types/interfaces";
@@ -71,6 +76,63 @@ export const validateLoginData = (req: Request, res: Response, next: NextFunctio
     return sendError(res, new Error(validation.errors.join(", ")), 400);
   }
   
+  next();
+};
+
+/**
+ * Middleware de validation pour la réinitialisation du mot de passe avec token OTP
+ */
+export const validateResetPasswordWithOtpData = (req: Request, res: Response, next: NextFunction) => {
+  const validation: ValidationResult = validateResetPasswordWithOtp(req.body);
+
+  if (!validation.isValid) {
+    return sendError(res, new Error(validation.errors.join(", ")), 400);
+  }
+
+  next();
+};
+
+/**
+ * Middleware de validation pour changement de mot de passe (utilisateur connecté)
+ */
+export const validateChangePasswordData = (req: Request, res: Response, next: NextFunction) => {
+  const validation: ValidationResult = validateChangePassword(req.body);
+  if (!validation.isValid) {
+    return sendError(res, new Error(validation.errors.join(", ")), 400);
+  }
+  next();
+};
+
+/**
+ * Middleware de validation pour un abonnement
+ */
+export const validateCreateSubscriptionData = (req: Request, res: Response, next: NextFunction) => {
+  const validation: ValidationResult = validateCreateSubscription(req.body);
+  if (!validation.isValid) {
+    return sendError(res, new Error(validation.errors.join(", ")), 400);
+  }
+  next();
+};
+
+/**
+ * Middleware de validation pour le payement
+ */
+export const validateUpdatePaymentStatusData = (req: Request, res: Response, next: NextFunction) => {
+  const validation: ValidationResult = validateUpdatePaymentStatus(req.body);
+  if (!validation.isValid) {
+    return sendError(res, new Error(validation.errors.join(", ")), 400);
+  }
+  next();
+};
+
+/**
+ * Middleware de validation pour la création des tarifs
+ */
+export const validateCreateTarifSubscriptionData = (req: Request, res: Response, next: NextFunction) => {
+  const validation: ValidationResult = validateCreateTarifSubscription(req.body);
+  if (!validation.isValid) {
+    return sendError(res, new Error(validation.errors.join(", ")), 400);
+  }
   next();
 };
 
