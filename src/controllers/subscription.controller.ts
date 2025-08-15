@@ -8,35 +8,6 @@ class SubscriptionController {
 
     // Création d'un abonnement
 
-   /* async createSubscription(req: Request, res: Response) {
-        try {
-            const { userId, type, phoneNumber } = req.body;
-
-            if (!userId || !type || !phoneNumber) {
-                throw new Error("userId, type et phoneNumber sont requis");
-            }
-
-            // Vérifier le paiement avant toute création
-            const amount = SubscriptionService.getPrice(type);
-            const paymentResult = await PaymentService.simulatePayment(amount, phoneNumber);
-
-            if (!paymentResult.success || !paymentResult.transactionId) {
-                return sendError(res, new Error("Échec du paiement "));
-            }
-
-            // Créer la souscription après paiement confirmé
-            const subscription = await SubscriptionService.createSubscription(
-                userId,
-                type,
-                paymentResult.transactionId
-            );
-
-            sendSuccess(res, subscription, "Abonnement créé et payé avec succès ✅", 201);
-        } catch (error) {
-            sendError(res, error);
-        }
-    }*/
-
     async createSubscription(req: Request, res: Response) {
         try {
             const { userId, type, phoneNumber } = req.body;
