@@ -27,7 +27,7 @@ const SubscriptionSchema = new Schema<SubscriptionDocument>(
     { timestamps: true }
 );
 
-// Middleware pour calculer endDate automatiquement
+// Middleware pour calculer la date de fin d'abonnement automatiquement
 SubscriptionSchema.pre("save", async function (next) {
 
         if (this.isNew || this.isModified("type")) {

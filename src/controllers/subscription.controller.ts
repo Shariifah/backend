@@ -3,6 +3,7 @@ import SubscriptionService from "../services/subscription.service";
 import PaymentService from "../services/payment.service";
 import { sendSuccess, sendError } from "../utils/responseHandler";
 import {TarifSubscriptionService} from "../services/tarifSubscription.service";
+import SubscriptionModel from "../models/subscription.model";
 
 class SubscriptionController {
 
@@ -16,11 +17,28 @@ class SubscriptionController {
                 throw new Error("userId, type et phoneNumber sont requis");
             }
 
-            // Récupérer le tarif dynamique depuis la base/config
+            // Récupérer le tarif dynamique depuis tarifSubscription
             const tarif = await TarifSubscriptionService.getTarifSubscrition(type);
             if (!tarif) {
                 throw new Error(`Aucun tarif trouvé pour le type: ${type}`);
             }
+
+            // Vérifier s'il existe un abonnement actif ou le plus récent
+            const lastSubscription = await SubscriptionModel.findOne({ userId })
+                .sort({ endDate: -1 })
+                .exec();
+
+            let startDate = new Date();
+
+            if (lastSubscription && lastSubscription.endDate > new Date()) {
+
+                startDate = new Date(lastSubscription.endDate);
+                startDate.setDate(startDate.getDate() + 1);
+            }
+
+            const endDate = new Date(startDate);
+            endDate.setMonth(endDate.getMonth() + tarif.durationInMonths);
+
 
             // Vérifier le paiement avant toute création
             const paymentResult = await PaymentService.simulatePayment(tarif.price, phoneNumber);
@@ -33,7 +51,11 @@ class SubscriptionController {
             const subscription = await SubscriptionService.createSubscription(
                 userId,
                 type,
-                paymentResult.transactionId
+                paymentResult.transactionId,
+                startDate,
+                endDate,
+                tarif.price
+
             );
 
             sendSuccess(res, subscription, "Abonnement créé et payé avec succès ✅", 201);
@@ -41,8 +63,6 @@ class SubscriptionController {
             sendError(res, error);
         }
     }
-
-
 
     // Récupérer les abonnements d'un utilisateur
     async getUserSubscriptions(req: Request, res: Response) {

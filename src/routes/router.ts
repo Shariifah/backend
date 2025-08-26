@@ -5,6 +5,8 @@ const router = express.Router();
 import authRoutes from "./auth.routes";
 import subscriptionRoutes from "./subscription.routes";
 import tarifSubscriptionRoutes from "../routes/tarifSubscription.routes";
+import subjectRoutes from "../routes/subject.routes";
+import publicationRoutes from "../routes/publicationSubject.routes";
 
 
 // Route racine
@@ -24,6 +26,8 @@ router.all('/', (req, res, next) => {
 router.use("/api/auth", authRoutes);
 router.use("/api/subscription", subscriptionRoutes);
 router.use("/api/tarifSubscription", tarifSubscriptionRoutes);
+router.use("/api/subject", subjectRoutes);
+router.use("/api/publication", publicationRoutes);
 
 
 // Middleware pour gérer les routes non trouvées (404)

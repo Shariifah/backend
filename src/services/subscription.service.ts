@@ -4,10 +4,10 @@ import { Types } from "mongoose";
 
 class SubscriptionService {
 
-    async createSubscription(userId: Types.ObjectId, type: SubscriptionType, transactionId: string
+    async createSubscription(userId: Types.ObjectId, type: SubscriptionType, transactionId: string, startDate: Date, endDate: Date,  price: number
     ) {
-        const subscription = new Subscription({userId, type, price: this.getPrice(type),
-            paymentStatus: "paid", transactionId
+        const subscription = new Subscription({userId, type,
+            paymentStatus: "paid", transactionId, startDate, endDate, price
         });
         return subscription.save();
     }
