@@ -10,7 +10,7 @@ const router = express.Router();
  */
 const upload = multer({
     storage: multer.memoryStorage(),
-    fileFilter: (req, file, cb) => {
+    fileFilter: (req: Express.Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
         if (file.mimetype !== "application/pdf") {
             return cb(new Error("Seuls les fichiers PDF sont autorisés !"));
         }
