@@ -4,6 +4,10 @@ import OtpService from "../services/otp.service";
 import SmsService from "../services/sms.service";
 import JwtService from "../services/jwt.service";
 import { sendSuccess, sendError } from "../utils/responseHandler";
+import userService from "../services/user.service";
+import {comparePassword, hashPassword} from "../utils/authUtils";
+import {UserDocument} from "../types/interfaces";
+import UserModel from "../models/user.model";
 
 class AuthController {
 
@@ -147,6 +151,10 @@ class AuthController {
       const { currentPassword, newPassword, confirmPassword } = req.body;
       const userId = (req as any).user.id; // Récupéré du middleware d'authentification
 
+      const user: UserDocument | null = await UserModel.findOne({ userId: userId });
+
+      const isMatch = await comparePassword(currentPassword, user!.password);
+      if (!isMatch) throw new Error("L'ancien mot de passe invalide.");
       // Vérifier que les nouveaux mots de passe correspondent
       if (newPassword !== confirmPassword) {
         throw new Error("Les nouveaux mots de passe ne correspondent pas");
@@ -232,7 +240,8 @@ class AuthController {
       }
 
       // Réinitialiser le mot de passe
-      await UserService.resetPassword(phonenumber, newPassword);
+      const user = await userService.findByPhonenumber(phonenumber);
+      await UserService.resetPassword(user.id, newPassword);
 
       // Invalider le token OTP
       await OtpService.invalidateOtpToken(otpToken);

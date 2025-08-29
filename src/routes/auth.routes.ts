@@ -1,12 +1,13 @@
 import express from "express";
 import authController from "../controllers/auth.controller";
-import { 
-  validateRequestOtpData, 
-  validateVerifyOtpData, 
-  validateRegisterWithOtpData, 
-  validateLoginData, 
-  validateResendOtpData
+import {
+  validateRequestOtpData,
+  validateVerifyOtpData,
+  validateRegisterWithOtpData,
+  validateLoginData,
+  validateResendOtpData, validateChangePasswordData, validateResetPasswordWithOtpData
 } from "../middlewares/validationMiddleware";
+import {authenticateToken} from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
@@ -26,6 +27,15 @@ router.post("/resend-otp", validateResendOtpData, authController.resendOtp.bind(
 
 // 🔹 AUTHENTIFICATION
 router.post("/login", validateLoginData, authController.login.bind(authController));
+
+// MOT DE PASSE OUBLIÉ
+router.post("/forgotPassword/request-otp", validateRequestOtpData, authController.requestPasswordResetOtp.bind(authController));
+router.post("/forgotPassword/verify-otp", validateVerifyOtpData, authController.verifyPasswordResetOtp.bind(authController));
+router.post("/forgotPassword/reset", validateResetPasswordWithOtpData, authController.resetPassword.bind(authController));
+router.post("/forgotPassword/resend-otp", validateResendOtpData, authController.resendPasswordResetOtp.bind(authController));
+
+// CHANGEMENT DE MOT DE PASSE (Utilisateur connecté)
+router.post("/change-password", authenticateToken, validateChangePasswordData, authController.changePassword.bind(authController));
 
 
 export default router;

@@ -307,4 +307,208 @@ export function validateRegisterWithOtp(data: any): ValidationResult {
   };
 
   return validateFields(data, rules);
-} 
+}
+
+/**
+ * Validation pour a réinitialisation du mot de passe avec token OTP (Étape 3)
+ */
+export function validateResetPasswordWithOtp(data: any): ValidationResult {
+  const rules: FieldValidation = {
+    otpToken: {
+      required: true,
+      type: 'string',
+      minLength: 32,
+      maxLength: 64
+    },
+    phonenumber: {
+      required: true,
+      type: 'phone'
+    },
+    newPassword: {
+      required: true,
+      type: 'password',
+      minLength: 8,
+      maxLength: 128,
+      custom: (value) => {
+        // Vérifier la complexité du mot de passe
+        const hasUpperCase = /[A-Z]/.test(value);
+        const hasLowerCase = /[a-z]/.test(value);
+        const hasNumbers = /\d/.test(value);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+
+        if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
+          return "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial";
+        }
+        return true;
+      }
+    },
+    confirmPassword: {
+      required: true,
+      type: 'string',
+      custom: (value) => {
+        if (value !== data.newPassword) {
+          return "Les mots de passe ne correspondent pas";
+        }
+        return true;
+      }
+    }
+  };
+
+  return validateFields(data, rules);
+}
+
+/**
+ * Validation spécifique pour le changement de mot de passe
+ */
+export function validateChangePassword(data: any): ValidationResult {
+  const rules: FieldValidation = {
+    currentPassword: {
+      required: true,
+      type: 'string',
+      minLength: 8,
+      maxLength: 128
+    },
+
+    newPassword: {
+      required: true,
+      type: 'password',
+      minLength: 8,
+      maxLength: 128,
+      custom: (value) => {
+        if (value === data.currentPassword) {
+          return "Le nouveau mot de passe doit être différent de l'actuel mot de passe";
+        }
+
+        const hasUpperCase = /[A-Z]/.test(value);
+        const hasLowerCase = /[a-z]/.test(value);
+        const hasNumbers = /\d/.test(value);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+
+        if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
+          return "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial";
+        }
+        return true;
+      }
+    },
+
+    confirmPassword: {
+      required: true,
+      type: 'string',
+      custom: (value) => {
+        if (value !== data.newPassword) {
+          return "Les mots de passe ne correspondent pas";
+        }
+        return true;
+      }
+    }
+  };
+
+  return validateFields(data, rules);
+}
+
+/**
+ * Validation pour la création d’un abonnement
+ */
+export function validateCreateSubscription(data: any): ValidationResult {
+  const rules: FieldValidation = {
+    userId: {
+      required: true,
+      type: "string"
+    },
+    type: {
+      required: true,
+      type: "string",
+      custom: (value) => {
+        const types = ["mensuel", "trimestriel", "semestriel", "annuel"];
+        if (!types.includes(value.toLowerCase())) {
+          return `Le type d'abonnement doit être parmi : ${types.join(", ")}`;
+        }
+        return true;
+      }
+    },
+    phoneNumber: {
+      required: true,
+      type: "phone"
+    },
+    price: {
+      required: true,
+      type: "number",
+      custom: (value) => {
+        if (value <= 0) {
+          return "Le prix doit être strictement supérieur à 0";
+        }
+        return true;
+      }
+    }
+  };
+
+  return validateFields(data, rules);
+}
+
+/**
+ * Validation pour la mise à jour du statut de paiement
+ */
+export function validateUpdatePaymentStatus(data: any): ValidationResult {
+  const rules: FieldValidation = {
+    status: {
+      required: true,
+      type: "string",
+      custom: (value) => {
+        const allowedStatus = ["pending", "paid", "failed"];
+        if (!allowedStatus.includes(value.toLowerCase())) {
+          return `Le statut doit être parmi : ${allowedStatus.join(", ")}`;
+        }
+        return true;
+      }
+    },
+    transactionId: {
+      required: false,
+      type: "string",
+    }
+  };
+  return validateFields(data, rules);
+
+}
+/**
+ * Validation pour la création d’un tarif d'abonnement
+ */
+export function validateCreateTarifSubscription(data: any): ValidationResult {
+  const rules: FieldValidation = {
+    type: {
+      required: true,
+      type: "string",
+      custom: (value) => {
+        const types = ["mensuel", "trimestriel", "semestriel", "annuel"];
+        if (!types.includes(value.toLowerCase())) {
+          return `Le type doit être parmi : ${types.join(", ")}`;
+        }
+        return true;
+      }
+    },
+    price: {
+      required: true,
+      type: "number",
+      custom: (value) => {
+        if (value <= 0) {
+          return "Le prix doit être strictement supérieur à 0";
+        }
+        return true;
+      }
+    },
+    durationInMonths: {
+      required: true,
+      type: "number",
+      custom: (value) => {
+        const types = [1, 3, 6, 12];
+        if (!types.includes(value)) {
+          return `La durée doit être parmi : ${types.join(", ")}`;
+        }
+        return true;
+      }
+    }
+  };
+
+  return validateFields(data, rules);
+}
+
+

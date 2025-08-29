@@ -41,7 +41,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
     }
 
     // Récupérer les informations utilisateur depuis la base de données
-    const user = await UserService.findByPhonenumber(decoded.userId);
+    const user = await UserService.findById(decoded.userId);
     if (!user) {
       return sendError(res, new Error("Utilisateur non trouvé"), 401);
     }

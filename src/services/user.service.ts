@@ -1,6 +1,7 @@
 import UserModel from "../models/user.model";
 import { hashPassword, comparePassword } from "../utils/authUtils";
 import { UserDocument } from "../types/interfaces";
+import Subscription from "@models/subscription.model";
 
 
 class UserService {
@@ -31,6 +32,9 @@ class UserService {
     return user;
   };
 
+  async findById(id: string) {
+    return UserModel.findById(id);
+  }
   // Service pour l'authentification d'un utilisateur
   async signin(phonenumber: string, password: string): Promise<UserDocument | any> {
     // Vérifier si l'utilisateur existe
@@ -47,6 +51,7 @@ class UserService {
   };
 
   // Réinitialiser le mot de passe d'un utilisateur
+
   async resetPassword(userId: string, newPassword: string) : Promise<any> {
     // Hacher le nouveau mot de passe
     const hashedPassword = await hashPassword(newPassword);
