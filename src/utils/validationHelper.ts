@@ -430,16 +430,6 @@ export function validateCreateSubscription(data: any): ValidationResult {
       required: true,
       type: "phone"
     },
-    price: {
-      required: true,
-      type: "number",
-      custom: (value) => {
-        if (value <= 0) {
-          return "Le prix doit être strictement supérieur à 0";
-        }
-        return true;
-      }
-    }
   };
 
   return validateFields(data, rules);
@@ -495,17 +485,6 @@ export function validateCreateTarifSubscription(data: any): ValidationResult {
         return true;
       }
     },
-    durationInMonths: {
-      required: true,
-      type: "number",
-      custom: (value) => {
-        const types = [1, 3, 6, 12];
-        if (!types.includes(value)) {
-          return `La durée doit être parmi : ${types.join(", ")}`;
-        }
-        return true;
-      }
-    }
   };
 
   return validateFields(data, rules);

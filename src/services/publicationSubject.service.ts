@@ -23,7 +23,7 @@ class PublicationSubjectService {
 
      async getPublicationContent(publicationId: string) {
         const publication = await PublicationSubjectModel.findById(publicationId).populate("subject");
-        if (!publication) throw new Error("Publication non trouvée");
+        if (!publication) throw new Error("Aucune publication trouvée");
 
         const now = new Date();
         if (now < publication.startDate) throw new Error("Le sujet n'est pas encore disponible");

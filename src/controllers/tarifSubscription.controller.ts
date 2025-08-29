@@ -1,20 +1,43 @@
 import { Request, Response } from "express";
 import { TarifSubscriptionService } from "../services/tarifSubscription.service";
 import { sendSuccess, sendError } from "../utils/responseHandler";
+enum SubscriptionType {
+    MENSUEL = 'mensuel',
+    TRIMESTRIEL = 'trimestriel',
+    SEMESTRIEL = 'semestriel',
+    ANNUEL = 'annuel'
+}
 
 class TarifSubscriptionController  {
 
     // Créer un tarif
     async createTarifSubscription(req: Request, res: Response) {
-        try {
-            const { type, price, durationInMonths } = req.body;
 
-            if (!type || !price || !durationInMonths) {
-                throw new Error("type, price et durationInMonths sont requis");
+        try {
+            const { type, price } = req.body;
+
+            if (!type || !price) {
+                throw new Error("type et price sont requis");
             }
 
+            const validTypes = Object.values(SubscriptionType);
+            if (!validTypes.includes(type)) {
+                throw new Error(`Type d'abonnement non valide. Types acceptés: ${validTypes.join(', ')}`);
+            }
+
+            const subscriptionType = type as SubscriptionType;
+
+            const typeToDuration: { [key in SubscriptionType]: number } = {
+                [SubscriptionType.MENSUEL]: 1,
+                [SubscriptionType.TRIMESTRIEL]: 3,
+                [SubscriptionType.SEMESTRIEL]: 6,
+                [SubscriptionType.ANNUEL]: 12
+            };
+
+            const durationInMonths = typeToDuration[subscriptionType];
+
             const tarif = await TarifSubscriptionService.createTarifSubscription(
-                type,
+                subscriptionType,
                 price,
                 durationInMonths
             );
