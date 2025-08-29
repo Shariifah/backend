@@ -5,14 +5,15 @@ import * as process from "node:process";
 
 
 // Charger le bon fichier .env
-const env = process.env.NODE_ENV || 'dev';
-dotenv.config({ path: path.resolve(__dirname, `../../.env.${env}`) });
+const env = process.env.NODE_ENV || 'development';
+// dotenv.config({ path: path.resolve(__dirname, `../../.env.${env}`) });
+dotenv.config();
 
 // Vérifier les variables essentielles
 const requiredVars = ['DBMS', 'DB_URI', 'APP_PORT', 'JWT_SECRET'];
 requiredVars.forEach((key) => {
   if (!process.env[key]) {
-    throw new Error(`⚠️  La variable d'environnement ${key} est manquante dans .env.${env}`);
+    throw new Error(`⚠️  La variable d'environnement ${key} est manquante.`);
   }
 });
 
