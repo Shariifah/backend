@@ -14,6 +14,9 @@ export type TokenType = 'refresh' | 'access';
 // Types pour la période de souscription
 export type SubscriptionType = "mensuel" | "trimestriel" | "semestriel" | "annuel";
 
+// Types pour les sujets
+export type SubjectType = "cours" | "examen";
+
 // Types pour le statut de paiement
 export type PaymentStatus = "pending" | "paid" | "failed";
 

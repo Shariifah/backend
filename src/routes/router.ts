@@ -7,6 +7,8 @@ import subscriptionRoutes from "./subscription.routes";
 import tarifSubscriptionRoutes from "../routes/tarifSubscription.routes";
 import subjectRoutes from "../routes/subject.routes";
 import publicationRoutes from "../routes/publicationSubject.routes";
+import questionRoutes from "../routes/question.routes";
+import userAnswerRoutes from "../routes/userAnswer.routes";
 
 
 // Route racine
@@ -28,6 +30,8 @@ router.use("/api/subscription", subscriptionRoutes);
 router.use("/api/tarifSubscription", tarifSubscriptionRoutes);
 router.use("/api/subject", subjectRoutes);
 router.use("/api/publication", publicationRoutes);
+router.use("/api/question", questionRoutes);
+router.use("/api/userAnswer", userAnswerRoutes);
 
 
 // Middleware pour gérer les routes non trouvées (404)
